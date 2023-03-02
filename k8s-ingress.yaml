@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fancy-devops-api-ingress #ingress应用名
+  namespace: fancy-devops
+spec:
+  rules:
+    - host: fancy-devops-api.chad122.top  #域名
+      http:
+        paths: 
+          - pathType: Prefix
+            path: /
+            backend: 
+              service:
+                name: fancy-devops-api-svc #服务名
+                port:
+                  number: 7000

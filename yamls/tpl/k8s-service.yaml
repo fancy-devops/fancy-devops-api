@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fancy-devops-api-svc
+  namespace: fancy-devops
+spec:
+  selector: 
+    app: fancy-devops-api
+  ports:
+    - port: 7000
+      targetPort: 7000

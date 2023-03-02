@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fancy-devops-api
+  namespace: fancy-devops
+  labels:
+    app: fancy-devops-api
+spec:
+  replicas: 1
+  selector: 
+    matchLabels:
+      app: fancy-devops-api
+  template:
+    metadata:
+      labels:
+        app: fancy-devops-api
+    spec:
+      containers:
+        - name: fancy-devops-api
+          image: fancy-devops-api:v1.0.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 7000
+              hostPort: 7000

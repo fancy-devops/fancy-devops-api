@@ -1,0 +1,463 @@
+definitions:
+  requests.HookRepository:
+    properties:
+      git_http_url:
+        type: integer
+      git_ssh_url:
+        type: integer
+      name:
+        type: string
+    type: object
+  requests.HookReq:
+    properties:
+      event_name:
+        type: string
+      ref:
+        type: integer
+      repository:
+        $ref: '#/definitions/requests.HookRepository'
+      user_email:
+        type: integer
+      user_id:
+        type: integer
+      user_name:
+        type: integer
+    type: object
+  requests.SendVerifyEmailReq:
+    properties:
+      email:
+        type: string
+    type: object
+  requests.UserChangePwdReq:
+    properties:
+      newpwd:
+        type: string
+      oldpwd:
+        type: string
+    type: object
+  requests.UserLoginReq:
+    properties:
+      email:
+        type: string
+      pwd:
+        type: string
+    type: object
+  requests.UserRegisterReq:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      pwd:
+        type: string
+    type: object
+  requests.UserResetPwdReq:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+    type: object
+  responses.IdResult:
+    properties:
+      code:
+        type: integer
+      data:
+        type: integer
+      msg:
+        type: string
+    type: object
+  responses.PagedUserList:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/responses.UserDetailModel'
+        type: array
+      total:
+        type: integer
+    type: object
+  responses.Result:
+    properties:
+      code:
+        type: integer
+      data:
+        type: string
+      msg:
+        type: string
+    type: object
+  responses.UserDetailModel:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      role:
+        type: integer
+    type: object
+  responses.UserLoginModel:
+    properties:
+      token:
+        type: string
+    type: object
+  responses.UserLoginRes:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/responses.UserLoginModel'
+      msg:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/git/hook:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Git钩子
+        in: body
+        name: '""'
+        required: true
+        schema:
+          $ref: '#/definitions/requests.HookReq'
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "400":
+          description: 错误的请求
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "500":
+          description: 系统异常
+          schema:
+            $ref: '#/definitions/responses.Result'
+      summary: Git钩子
+      tags:
+      - Git
+  /api/user/changepwd:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 修改密码
+        in: body
+        name: '""'
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UserChangePwdReq'
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "400":
+          description: 错误的请求
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "401":
+          description: 未登录
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "500":
+          description: 系统异常
+          schema:
+            $ref: '#/definitions/responses.Result'
+      summary: 修改密码
+      tags:
+      - User
+  /api/user/detail/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取用户详情
+          schema:
+            $ref: '#/definitions/responses.UserDetailModel'
+        "400":
+          description: 错误的请求
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "401":
+          description: 未登录
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "500":
+          description: 系统异常
+          schema:
+            $ref: '#/definitions/responses.Result'
+      summary: 获取用户详情
+      tags:
+      - User
+  /api/user/glogin:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 登录
+        in: body
+        name: '""'
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UserLoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/responses.UserLoginRes'
+        "400":
+          description: 错误的请求
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "401":
+          description: 未登录
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "500":
+          description: 系统异常
+          schema:
+            $ref: '#/definitions/responses.Result'
+      summary: 登录
+      tags:
+      - User
+  /api/user/list:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - in: query
+        name: role
+        type: integer
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取用户列表
+          schema:
+            $ref: '#/definitions/responses.PagedUserList'
+        "400":
+          description: 错误的请求
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "401":
+          description: 未登录
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "500":
+          description: 系统异常
+          schema:
+            $ref: '#/definitions/responses.Result'
+      summary: 获取用户列表
+      tags:
+      - User
+  /api/user/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 登录
+        in: body
+        name: '""'
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UserLoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/responses.UserLoginRes'
+        "400":
+          description: 错误的请求
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "401":
+          description: 未登录
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "500":
+          description: 系统异常
+          schema:
+            $ref: '#/definitions/responses.Result'
+      summary: 登录
+      tags:
+      - User
+  /api/user/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 注册
+        in: body
+        name: '""'
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UserRegisterReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/responses.IdResult'
+        "400":
+          description: 错误的请求
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "401":
+          description: 未登录
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "500":
+          description: 系统异常
+          schema:
+            $ref: '#/definitions/responses.Result'
+      summary: 注册
+      tags:
+      - User
+  /api/user/resetpwd:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 重置密码
+        in: body
+        name: '""'
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UserResetPwdReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "400":
+          description: 错误的请求
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "401":
+          description: 未登录
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "500":
+          description: 系统异常
+          schema:
+            $ref: '#/definitions/responses.Result'
+      summary: 重置密码
+      tags:
+      - User
+  /api/user/sendverifyemail:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 发送认证邮件
+        in: body
+        name: '""'
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SendVerifyEmailReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "400":
+          description: 错误的请求
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "401":
+          description: 未登录
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/responses.Result'
+        "500":
+          description: 系统异常
+          schema:
+            $ref: '#/definitions/responses.Result'
+      summary: 发送认证邮件
+      tags:
+      - User
+swagger: "2.0"
