@@ -7,14 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
 
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/model/codes"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/model/db"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/model/requests"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/model/responses"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/pkg/setting"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/pkg/util"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/redis"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/service"
+	"github.com/fancy-devops/fancy-devops-api/model/codes"
+	"github.com/fancy-devops/fancy-devops-api/model/db"
+	"github.com/fancy-devops/fancy-devops-api/model/requests"
+	"github.com/fancy-devops/fancy-devops-api/model/responses"
+	"github.com/fancy-devops/fancy-devops-api/service"
+	"github.com/fancy-devops/fancy-devops-api/utils/common"
+	"github.com/fancy-devops/fancy-devops-api/utils/redis"
 )
 
 type User struct {
@@ -40,7 +39,7 @@ func (obj *User) SendVerifyEmail(c *gin.Context) {
 	var req requests.SendVerifyEmailReq
 	err := c.BindJSON(&req)
 	if err != nil {
-		util.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, "参数错误")
+		common.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, "参数错误")
 		return
 	}
 	valid := validation.Validation{}
@@ -51,14 +50,14 @@ func (obj *User) SendVerifyEmail(c *gin.Context) {
 			errStr += err.Message
 		}
 
-		util.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, errStr)
+		common.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, errStr)
 		return
 	}
-	n := util.NewCommon().GetRandomNumber(999999)
+	n := common.NewCommon().GetRandomNumber(999999)
 
 	redis.RedisClient.Set(redis.Prefix+req.Email, n, 5*60*1000*1000*1000)
-	util.NewEmail().SendEmail(req.Email, "【fancy-devops】验证码", fmt.Sprintf("您的验证码为：%d", n))
-	util.NewGinRes().SuccessResponse(c, "")
+	common.NewEmail().SendEmail(req.Email, "【fancy-devops】验证码", fmt.Sprintf("您的验证码为：%d", n))
+	common.NewGinRes().SuccessResponse(c, "")
 }
 
 // @Tags User
@@ -77,7 +76,7 @@ func (obj *User) ResetPwd(c *gin.Context) {
 	var req requests.UserResetPwdReq
 	err := c.BindJSON(&req)
 	if err != nil {
-		util.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, "参数错误")
+		common.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, "参数错误")
 		return
 	}
 	valid := validation.Validation{}
@@ -95,18 +94,18 @@ func (obj *User) ResetPwd(c *gin.Context) {
 			errStr += err.Message
 		}
 
-		util.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, errStr)
+		common.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, errStr)
 		return
 	}
 	user := service.NewUser().GetUserByEmail(req.Email)
 	if user.ID <= 0 {
-		util.NewGinRes().ErrorResponse(c, codes.Error_User_NotExist)
+		common.NewGinRes().ErrorResponse(c, codes.Error_User_NotExist)
 		return
 	}
-	newPwd := util.NewCommon().GetRandomString(12)
-	util.NewEmail().SendEmail(req.Email, "【fancy-devops】重置密码", "您的新密码为："+newPwd)
+	newPwd := common.NewCommon().GetRandomString(12)
+	common.NewEmail().SendEmail(req.Email, "【fancy-devops】重置密码", "您的新密码为："+newPwd)
 	service.NewUser().UpdateUserPwd(req.Email, newPwd)
-	util.NewGinRes().SuccessResponse(c, "")
+	common.NewGinRes().SuccessResponse(c, "")
 }
 
 // @Tags User
@@ -126,12 +125,12 @@ func (obj *User) ChangePwd(c *gin.Context) {
 	var req requests.UserChangePwdReq
 	err := c.BindJSON(&req)
 	if err != nil {
-		util.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, "参数错误")
+		common.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, "参数错误")
 		return
 	}
-	claims, err := util.NewJwt().GetClaims(c)
+	claims, err := common.NewJwt().GetClaims(c)
 	if err != nil {
-		util.NewGinRes().ErrorResponse(c, codes.Error_User_AuthTokenParseError)
+		common.NewGinRes().ErrorResponse(c, codes.Error_User_AuthTokenParseError)
 		return
 	}
 
@@ -145,18 +144,18 @@ func (obj *User) ChangePwd(c *gin.Context) {
 			errStr += err.Message
 		}
 
-		util.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, errStr)
+		common.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, errStr)
 		return
 	}
 
 	user := service.NewUser().GetUserByPassword(claims.Email, req.OldPwd)
 	if user.ID <= 0 {
-		util.NewGinRes().ErrorResponse2(c, codes.Error_User_WrongPassword, "旧密码错误")
+		common.NewGinRes().ErrorResponse2(c, codes.Error_User_WrongPassword, "旧密码错误")
 		return
 	}
 
 	service.NewUser().UpdateUserPwd(claims.Email, req.NewPwd)
-	util.NewGinRes().SuccessResponse(c, "")
+	common.NewGinRes().SuccessResponse(c, "")
 }
 
 // @Tags User
@@ -175,7 +174,7 @@ func (obj *User) Register(c *gin.Context) {
 	var req requests.UserRegisterReq
 	err := c.BindJSON(&req)
 	if err != nil {
-		util.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, "参数错误")
+		common.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, "参数错误")
 		return
 	}
 	valid := validation.Validation{}
@@ -195,19 +194,19 @@ func (obj *User) Register(c *gin.Context) {
 			errStr += err.Message
 		}
 
-		util.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, errStr)
+		common.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, errStr)
 		return
 	}
 	user := service.NewUser().GetUserByEmail(req.Email)
 	if user.ID > 0 {
-		util.NewGinRes().ErrorResponse(c, codes.Error_User_Exist)
+		common.NewGinRes().ErrorResponse(c, codes.Error_User_Exist)
 		return
 	}
 	newId := service.NewUser().CreateUser(req.Name, req.Email, req.Pwd, 0)
 
 	service.NewUser().SendSecretEmail(req.Email)
 
-	util.NewGinRes().SuccessResponse(c, newId)
+	common.NewGinRes().SuccessResponse(c, newId)
 }
 
 // @Tags User
@@ -226,7 +225,7 @@ func (obj *User) Login(c *gin.Context) {
 	var req requests.UserLoginReq
 	err := c.BindJSON(&req)
 	if err != nil {
-		util.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, "参数错误")
+		common.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, "参数错误")
 		return
 	}
 	valid := validation.Validation{}
@@ -238,17 +237,17 @@ func (obj *User) Login(c *gin.Context) {
 			errStr += err.Message
 		}
 
-		util.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, errStr)
+		common.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, errStr)
 		return
 	}
 
 	user := service.NewUser().GetUserByPassword(req.Email, req.Pwd)
 	if user.ID <= 0 {
-		util.NewGinRes().ErrorResponse(c, codes.Error_User_WrongPassword)
+		common.NewGinRes().ErrorResponse(c, codes.Error_User_WrongPassword)
 		return
 	}
 	if user.Role == 0 {
-		util.NewGinRes().ErrorResponse(c, codes.Error_User_Guest)
+		common.NewGinRes().ErrorResponse(c, codes.Error_User_Guest)
 		return
 	}
 
@@ -256,14 +255,14 @@ func (obj *User) Login(c *gin.Context) {
 		service.NewUser().SendSecretEmail(req.Email)
 	}
 
-	token, err := util.NewJwt().GenerateToken(user.ID, user.Name, user.Email, user.Role)
+	token, err := common.NewJwt().GenerateToken(user.ID, user.Name, user.Email, user.Role)
 	if err != nil {
-		util.NewGinRes().ErrorResponse(c, codes.Error_User_AuthTokenGenFailed)
+		common.NewGinRes().ErrorResponse(c, codes.Error_User_AuthTokenGenFailed)
 		return
 	}
 
 	data := responses.UserLoginModel{Token: token}
-	util.NewGinRes().SuccessResponse(c, data)
+	common.NewGinRes().SuccessResponse(c, data)
 }
 
 // @Tags User
@@ -282,7 +281,7 @@ func (obj *User) LoginByGoogle(c *gin.Context) {
 	var req requests.UserLoginReq
 	err := c.BindJSON(&req)
 	if err != nil {
-		util.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, "参数错误")
+		common.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, "参数错误")
 		return
 	}
 	valid := validation.Validation{}
@@ -294,39 +293,39 @@ func (obj *User) LoginByGoogle(c *gin.Context) {
 			errStr += err.Message
 		}
 
-		util.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, errStr)
+		common.NewGinRes().ErrorResponse2(c, codes.Common_BadRequest, errStr)
 		return
 	}
 
 	user := service.NewUser().GetUserByEmail(req.Email)
 	if user.ID <= 0 {
-		util.NewGinRes().ErrorResponse(c, codes.Error_User_NotExist)
+		common.NewGinRes().ErrorResponse(c, codes.Error_User_NotExist)
 		return
 	}
 
-	verifyRes, err := util.NewGoogleAuth().VerifyCode(user.Secret, req.Pwd)
+	verifyRes, err := common.NewGoogleAuth().VerifyCode(user.Secret, req.Pwd)
 	if err != nil {
-		util.NewGinRes().ErrorResponse2(c, codes.Error_Failed, "code校验异常")
+		common.NewGinRes().ErrorResponse2(c, codes.Error_Failed, "code校验异常")
 		return
 	}
 	if !verifyRes {
-		util.NewGinRes().ErrorResponse2(c, codes.Error_User_WrongCode, "code校验不通过")
+		common.NewGinRes().ErrorResponse2(c, codes.Error_User_WrongCode, "code校验不通过")
 		return
 	}
 
 	if user.Role == 0 {
-		util.NewGinRes().ErrorResponse(c, codes.Error_User_Guest)
+		common.NewGinRes().ErrorResponse(c, codes.Error_User_Guest)
 		return
 	}
 
-	token, err := util.NewJwt().GenerateToken(user.ID, user.Name, user.Email, user.Role)
+	token, err := common.NewJwt().GenerateToken(user.ID, user.Name, user.Email, user.Role)
 	if err != nil {
-		util.NewGinRes().ErrorResponse(c, codes.Error_User_AuthTokenGenFailed)
+		common.NewGinRes().ErrorResponse(c, codes.Error_User_AuthTokenGenFailed)
 		return
 	}
 
 	data := responses.UserLoginModel{Token: token}
-	util.NewGinRes().SuccessResponse(c, data)
+	common.NewGinRes().SuccessResponse(c, data)
 }
 
 // @Tags User
@@ -355,7 +354,7 @@ func (obj *User) GetUserDetail(c *gin.Context) {
 		data.Role = user.Role
 	}
 
-	util.NewGinRes().SuccessResponse(c, data)
+	common.NewGinRes().SuccessResponse(c, data)
 }
 
 // @Tags User
@@ -373,13 +372,13 @@ func (obj *User) GetUserDetail(c *gin.Context) {
 func (obj *User) GetUserList(c *gin.Context) {
 	// 获取用户列表
 	// 校验权限
-	claims, err := util.NewJwt().GetClaims(c)
+	claims, err := common.NewJwt().GetClaims(c)
 	if err != nil {
-		util.NewGinRes().ErrorResponse(c, codes.Error_User_AuthTokenParseError)
+		common.NewGinRes().ErrorResponse(c, codes.Error_User_AuthTokenParseError)
 		return
 	}
 	if claims.Role != db.Role_Admin {
-		util.NewGinRes().ErrorResponse(c, codes.Common_Forbidden)
+		common.NewGinRes().ErrorResponse(c, codes.Common_Forbidden)
 		return
 	}
 
@@ -392,12 +391,13 @@ func (obj *User) GetUserList(c *gin.Context) {
 	}
 
 	var data responses.PagedUserList
-	userList := service.NewUser().GetUsers(util.NewPagination().GetPageSkip(c), setting.PageSize, maps)
+	skip, size := common.NewPagination().GetPager(c)
+	userList := service.NewUser().GetUsers(skip, size, maps)
 
 	for _, u := range userList {
 		data.List = append(data.List, responses.UserDetailModel{ID: u.ID, Name: u.Name, Email: u.Email, Role: u.Role})
 	}
 	data.Total = service.NewUser().GetUserTotal(maps)
 
-	util.NewGinRes().SuccessResponse(c, data)
+	common.NewGinRes().SuccessResponse(c, data)
 }

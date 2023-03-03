@@ -1,8 +1,8 @@
 package service
 
 import (
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/database"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/model/db"
+	"github.com/fancy-devops/fancy-devops-api/model/db"
+	"github.com/fancy-devops/fancy-devops-api/utils/mysql"
 )
 
 type Git struct {
@@ -13,6 +13,6 @@ func NewGit() *Git {
 }
 
 func (obj *Git) GetDirectories(where interface{}) (directories []db.Dir) {
-	database.DBInstance.Where(where).Find(&directories)
+	mysql.DBInstance.Where(where).Find(&directories)
 	return
 }

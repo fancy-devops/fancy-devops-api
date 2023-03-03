@@ -1,7 +1,9 @@
 package requests
 
 type GetUserListReq struct {
-	Role int `json:"role"`
+	Role      int `json:"role"`
+	PageIndex int `json:"pageIndex"`
+	PageSize  int `json:"pageSize"`
 }
 
 type SendVerifyEmailReq struct {

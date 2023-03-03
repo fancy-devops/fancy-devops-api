@@ -7,9 +7,9 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	_ "gitlab.chad122.top/fancy-devops/fancy-devops-api/docs"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/pkg/setting"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/routers"
+	_ "github.com/fancy-devops/fancy-devops-api/docs"
+	"github.com/fancy-devops/fancy-devops-api/routers"
+	"github.com/fancy-devops/fancy-devops-api/utils/setting"
 )
 
 func main() {

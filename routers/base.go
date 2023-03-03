@@ -3,9 +3,9 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/controller"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/middleware/jwt"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/pkg/setting"
+	"github.com/fancy-devops/fancy-devops-api/controller"
+	"github.com/fancy-devops/fancy-devops-api/middleware/jwt"
+	"github.com/fancy-devops/fancy-devops-api/utils/setting"
 )
 
 func InitRouter() *gin.Engine {

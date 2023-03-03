@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fancy-devops/fancy-devops-api/model/codes"
+	"github.com/fancy-devops/fancy-devops-api/utils/common"
 	"github.com/gin-gonic/gin"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/model/codes"
-	"gitlab.chad122.top/fancy-devops/fancy-devops-api/pkg/util"
 )
 
 func JWT() gin.HandlerFunc {
@@ -18,7 +18,7 @@ func JWT() gin.HandlerFunc {
 		if token == "" {
 			code = codes.Error_User_AuthTokenNotExist
 		} else {
-			claims, err := util.NewJwt().ParseToken(token)
+			claims, err := common.NewJwt().ParseToken(token)
 			if err != nil {
 				code = codes.Error_User_AuthTokenParseError
 			} else if time.Now().Unix() > claims.ExpiresAt {
